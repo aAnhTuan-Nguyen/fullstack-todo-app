@@ -1,25 +1,24 @@
 import React from "react"
+import TaskEmptyState from "./TaskEmptyState"
+import TaskCard from "./TaskCard"
 
-const TaskList = () => {
-  let filter = "ALL" // ALL | ACTIVE | COMPLETE
-  const tasks = [
-    {
-      _id: "1",
-      title: "học next",
-      status: "active",
-      completedAt: null,
-      createdAt: "2025-09-27T05:31:16.654Z",
-    },
-    {
-      _id: "2",
-      title: "học react",
-      status: "active",
-      completedAt: null,
-      createdAt: "2025-09-27T05:28:17.368Z",
-    },
-  ]
+const TaskList = ({ filteredTasks, filter, handleChange }) => {
+  if (!filteredTasks || filteredTasks.length === 0) {
+    return <TaskEmptyState filter={filter} />
+  }
 
-  return <div className="space-y-4"></div>
+  return (
+    <div className="space-y-3">
+      {filteredTasks.map((task, index) => (
+        <TaskCard
+          key={task._id}
+          task={task}
+          index={index}
+          handleChange={handleChange}
+        />
+      ))}
+    </div>
+  )
 }
 
 export default TaskList

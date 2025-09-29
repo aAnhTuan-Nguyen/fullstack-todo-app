@@ -7,7 +7,8 @@ import { Filter } from "lucide-react"
 const StatsAndFilters = ({
   completedTaskCount = 0,
   activeTaskCount = 0,
-  filter = "ALL",
+  filterStatus,
+  setFilterStatus,
 }) => {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -17,13 +18,13 @@ const StatsAndFilters = ({
           variant="secondary"
           className="bg-white/50 text-accent-foreground border-info/40"
         >
-          {activeTaskCount} {FilterType.ACTIVE}
+          {activeTaskCount} {FilterType.active}
         </Badge>
         <Badge
           variant="secondary"
           className="bg-green-500/20 text-green-700 border-green-500/40"
         >
-          {completedTaskCount} {FilterType.COMPLETE}
+          {completedTaskCount} {FilterType.complete}
         </Badge>
       </div>
 
@@ -33,9 +34,10 @@ const StatsAndFilters = ({
           return (
             <Button
               key={type}
-              variant={filter === type ? "gradient" : "ghost"}
+              variant={filterStatus === type ? "gradient" : "ghost"}
               size="sm"
               className="capitalize"
+              onClick={() => setFilterStatus(type)}
             >
               <Filter className="size-4" />
               {FilterType[type]}

@@ -1,5 +1,26 @@
 export const FilterType = {
-  ALL: "Tất cả",
-  ACTIVE: "Đang làm",
-  COMPLETE: "Hoàn thành",
+  all: "Tất cả",
+  active: "Đang làm",
+  complete: "Hoàn thành",
 }
+
+export const options = [
+  {
+    value: "today",
+    label: "Hôm nay",
+  },
+  {
+    value: "week",
+    label: "Tuần này",
+  },
+  {
+    value: "month",
+    label: "Tháng này",
+  },
+  {
+    value: "all",
+    label: "Tất cả",
+  },
+]
+
+export const visibleTasksLimit = 4
