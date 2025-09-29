@@ -1,9 +1,42 @@
 import Task from "../models/Task.js"
 
 export const getTasks = async (req, res) => {
+  const { filter } = req.query
+  const now = new Date()
+  let startDate
+  if (filter === "today") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  } else if (filter === "week") {
+    const firstDayOfWeek = now.getDate() - now.getDay() // Chủ nhật là ngày đầu tiên trong tuần
+    startDate = new Date(now.getFullYear(), now.getMonth(), firstDayOfWeek)
+  } else if (filter === "month") {
+    startDate = new Date(now.getFullYear(), now.getMonth(), 1)
+  } else {
+    // all
+    startDate = null
+  }
+
+  const query = startDate ? { createdAt: { $gte: startDate } } : {}
   try {
-    const tasks = await Task.find().sort({ createdAt: "descending" }) // createdAt: -1 giarm dần
-    res.status(200).json(tasks)
+    const result = await Task.aggregate([
+      { $match: query }, // Lọc theo createdAt nếu có startDate
+      {
+        $facet: {
+          tasks: [{ $sort: { createdAt: -1 } }],
+          activeCount: [{ $match: { status: "active" } }, { $count: "count" }],
+          completedCount: [
+            { $match: { status: "complete" } },
+            { $count: "count" },
+          ],
+        },
+      },
+    ])
+    // result nó trả về 1 mảng có 1 obj
+    res.status(200).json({
+      tasks: result[0].tasks,
+      activeCount: result[0].activeCount[0]?.count || 0,
+      completedCount: result[0].completedCount[0]?.count || 0,
+    })
   } catch (error) {
     console.error("Error fetching tasks:", error)
     res.status(500).json({ message: "Server error" })
@@ -32,16 +65,15 @@ export const updateTask = async (req, res) => {
       return res.status(404).json({ message: "Task not found" })
     }
 
-    const updatedTask = await Task.findByIdAndUpdate(
-      id,
-      {
-        title: title || existingTask.title,
-        status: status || existingTask.status,
-        completedAt: status === "complete" ? new Date() : null,
-      },
-      { new: true } // Trả về document đã được update, nếu ko có thì trả về document cũ
-    )
+    const updateData = {
+      title: title || existingTask.title,
+      status: status || existingTask.status,
+      completedAt: status === "complete" ? new Date() : null,
+    }
 
+    const updatedTask = await Task.findByIdAndUpdate(id, updateData, {
+      new: true, // Trả về document đã cập nhật
+    })
     res.status(200).json(updatedTask)
   } catch (error) {
     console.error("Error updating task:", error)
